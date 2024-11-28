@@ -1,3 +1,4 @@
+```
 /camagru-web-app
 │
 ├── /src                          # Core application files
@@ -71,4 +72,4 @@
 ├── package.json                  # Node.js dependencies (if using build tools)
 ├── README.md                     # Project overview and documentation
 └── index.php                     # Entry point for the PHP application (front controller)
-
+``

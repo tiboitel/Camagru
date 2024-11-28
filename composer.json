@@ -1,0 +1,15 @@
+{
+    "name": "tiboitel/camagru",
+    "description": "Camagru is a lightweight, Instagram-inspired web application for editing, uploading, and sharing images with overlays, comments, and galleries.",
+    "type": "project",
+    "require": {
+        "php": "^8.2"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Tiboitel\\Camagru\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}

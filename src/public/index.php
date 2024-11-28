@@ -1,6 +1,16 @@
 <?php 
+namespace Tiboitel\Camagru;
 
-echo "toto\n";
-include_once('index.html');
+require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../config/routes.php';
 
+class App {
+	
+	function run()
+	{
+	}
+}
+
+$app = new App();
+$app->run();
 ?>

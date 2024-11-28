@@ -1,0 +1,4 @@
+Make the autoloader case-insensitive ? 
+Do a better router ?
+
+Well at least it work *shrug*

@@ -37,7 +37,6 @@ $routes = [
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestUri = strtok($_SERVER['REQUEST_URI'], '?'); // Remove query string for clean matching
 
-echo $requestMethod . " " . $requestUri . "<br>";
 $galeryController = new GalleryController();
 
 // Match the request to the route

@@ -1,15 +1,7 @@
-<?php 
-namespace Tiboitel\Camagru;
-
+<?php
 require_once __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/../config/routes.php';
 
-class App {
-	
-	function run()
-	{
-	}
-}
+use Tiboitel\Camagru\App;
 
 $app = new App();
 $app->run();

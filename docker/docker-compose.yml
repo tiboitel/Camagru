@@ -1,21 +1,6 @@
 version: '3.8'
 
 services:
-  nginx:
-    image: nginx:latest
-    container_name: camagru-nginx
-    ports:
-      - "8080:80"
-    volumes:
-      - ../src:/var/www/src
-      - ../docker/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - web
-    networks:
-      - camagru
-    # user: "33:33" 
-    restart: always
-
   web:
     build:
       context: ..
@@ -26,7 +11,7 @@ services:
     networks:
       - camagru
     volumes:
-      - ../src:/var/www/src
+      - ../src:/var/www/html
       - ../vendor:/var/www/vendor
     depends_on:
       - db
@@ -35,7 +20,22 @@ services:
       - DB_NAME=camagru
       - DB_USER=root
       - DB_PASS=root
-    # user: "33:33"
+    restart: always
+
+  nginx:
+    build:
+      context: ../docker
+      dockerfile: nginx.Dockerfile
+    container_name: camagru-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ../src:/var/www/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - web
+    networks:
+      - camagru
     restart: always
 
   db:
@@ -52,4 +52,4 @@ services:
 
 networks:
   camagru:
-
+    driver: bridge

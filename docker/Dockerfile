@@ -14,16 +14,15 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Set working directory
-WORKDIR /var/www/html
+# Copier le fichier php.ini personnalisé
+# COPY php.ini /usr/local/etc/php/
 
-# Set ownership of the working directory
-RUN chown -R www-data:www-data /var/www/html
+# Copier les fichiers de l'application
 
-USER www-data
+COPY ../src /var/www/html
+
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
 # Expose port 9000 to connect to Nginx
 EXPOSE 9000
-
-CMD ["php-fpm"]
-

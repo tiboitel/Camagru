@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tiboite\Camagru\Psr\Http\Message;
+namespace Tiboitel\Camagru\Psr\Http\Message;
 
 use Tiboitel\Camagru\Psr\Http\Message\ServerRequestInterface;
 use Tiboitel\Camagru\Psr\Http\Message\UriInterface;
@@ -30,6 +30,11 @@ class ServerRequest extends Request implements ServerRequestInterface
      * @var array The request headers.
      */
     private array $headers = [];
+
+    /**
+     * @var array The Cookies of the request.
+     */
+    private array $cookies = [];
 
     /**
      * @var StreamInterface The body of the request.

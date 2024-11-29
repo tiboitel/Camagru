@@ -1,58 +1,45 @@
 <?php
+use Router;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 
-# require_once(__DIR__ . '/../controllers/GalleryController.php');
+// Instantiate the router
 
-use Tiboitel\Camagru\Controllers\GalleryController;
+function setRoutesConfig(Router $router) {
 
-/**
- * Basic Routing System for the Camagru Web Application
- * 
- * Routes are mapped to specific controllers and methods.
- */
+    // Define base URI path
+    $router->setBasePath('/');
+   
+   // Define routes
+    $router->get('/', function (Request $request, Response $response) {
+        $response->getBody()->write('Welcome to Camagru!');
+        return $response;
+    });
 
-// Define all routes in a structured array
-$routes = [
-    'GET' => [
-        '/' => [GalleryController::class, 'index'],          // Homepage
-        '/login' => [UserController::class, 'showLogin'],    // Login Page
-        '/register' => [UserController::class, 'showRegister'], // Registration Page
-        '/profile' => [UserController::class, 'profile'],    // User Profile
-        '/gallery' => [GalleryController::class, 'index'],   // Gallery Page
-        '/image/edit' => [ImageController::class, 'edit'],   // Edit Image
-        '/image/view' => [ImageController::class, 'view'],   // View Single Image
-    ],
-    'POST' => [
-        '/login' => [UserController::class, 'login'],        // Handle Login
-        '/register' => [UserController::class, 'register'],  // Handle Registration
-        '/image/upload' => [ImageController::class, 'upload'], // Handle Image Upload
-        '/comment/add' => [CommentController::class, 'add'], // Add Comment
-    ],
-    'DELETE' => [
-        '/image/delete' => [ImageController::class, 'delete'], // Delete Image
-        '/comment/delete' => [CommentController::class, 'delete'], // Delete Comment
-    ],
-];
+    $router->get('/gallery', function (Request $request, Response $response) {
+        $response->getBody()->write('Gallery Page');
+        return $response;
+    });
 
-// Handle the current request
-$requestMethod = $_SERVER['REQUEST_METHOD'];
-$requestUri = strtok($_SERVER['REQUEST_URI'], '?'); // Remove query string for clean matching
+    $router->get('/user/{id}', function (Request $request, Response $response) {
+        $params = $request->getAttribute('params');
+        $response->getBody()->write('User ID: ' . $params['id']);
+        return $response;
+    });
 
-$galeryController = new GalleryController();
+    // Middleware example
+    $router->middleware(function (Request $request, Response $response) {
+        // Example: Basic logging middleware
+        error_log($request->getMethod() . ' ' . $request->getUri());
+        return $response;
+    });
 
-// Match the request to the route
-if (isset($routes[$requestMethod][$requestUri])) {
-    [$controller, $method] = $routes[$requestMethod][$requestUri];
-
-    // Check if the controller and method exist
-    if (class_exists($controller) && method_exists($controller, $method)) {
-        $controllerInstance = new $controller();
-        call_user_func([$controllerInstance, $method]);
-    } else {
-        http_response_code(500);
-        echo "Error: Controller or method not found.";
-    }
-} else {
-    http_response_code(404);
-    echo "Error 404: Page not found.";
+    // Register the routes in a group
+    $router->group('admin', function (Router $router) {
+        $router->get('/dashboard', function (Request $request, Response $response) {
+            $response->getBody()->write('Admin Dashboard');
+            return $response;
+        });
+    });
 }
-
+?>

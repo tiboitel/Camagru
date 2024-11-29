@@ -1,8 +1,2 @@
-Make the autoloader case-insensitive ? 
-Do a better router ?
-Get that shit PSR compliant
-
-
-Well at least it work *shrug*
-
-
+- Add a PSR-7 compliant Request and Response class. 
+- Finger cross that everything is working fine.

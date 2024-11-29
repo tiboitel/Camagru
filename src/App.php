@@ -7,6 +7,7 @@ namespace Tiboitel\Camagru;
 use Tiboitel\Camagru\Router;
 use Tiboitel\Camagru\Psr\Http\Message\ResponseInterface;
 use Tiboitel\Camagru\Psr\Http\Message\ServerRequestInterface;
+use Tiboitel\Camagru\Psr\Http\Message\ServerRequest;
 
 class App
 {

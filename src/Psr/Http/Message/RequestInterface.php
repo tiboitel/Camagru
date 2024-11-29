@@ -1,6 +1,6 @@
 <?php
 
-namespace Psr\Http\Message;
+namespace Tiboitel\Camagru\Psr\Http\Message;
 
 /**
  * Representation of an outgoing, client-side request.

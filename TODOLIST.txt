@@ -1,4 +1,8 @@
 Make the autoloader case-insensitive ? 
 Do a better router ?
+Get that shit PSR compliant
+
 
 Well at least it work *shrug*
+
+

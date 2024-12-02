@@ -1,2 +1,3 @@
-- Add a PSR-7 compliant Request and Response class. 
-- Finger cross that everything is working fine.
+ - Implement Request class.
+ - Implement Uri class with PSR-7 UriInterface. 
+ 

@@ -95,6 +95,8 @@ class Autoloader
         // Iterate through base directories for the prefix
         foreach ($this->prefixes[$prefix] as $baseDir) {
             $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+
+            echo $file;
             // If file exists, include it
             if (file_exists($file)) {
                 require $file;

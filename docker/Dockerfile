@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install gd pdo pdo_mysql zip
 
-# Install Composer
+# Install Composer securely
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copier le fichier php.ini personnalisé
@@ -19,10 +19,10 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 # Copier les fichiers de l'application
 
-COPY ../src /var/www/html
+COPY ../src /var/www/src
 
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+RUN chown -R www-data:www-data /var/www/src \
+    && chmod -R 755 /var/www/src
 
 # Expose port 9000 to connect to Nginx
 EXPOSE 9000

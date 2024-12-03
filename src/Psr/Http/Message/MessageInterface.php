@@ -1,4 +1,4 @@
-<?phpA
+<?php
 
 namespace Tiboitel\Camagru\Psr\Http\Message;
 

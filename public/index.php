@@ -11,7 +11,7 @@ error_reporting(E_ALL);
 
 $autoloader = new Autoloader();
 $autoloader->register();
-$autoloader->addNamespace("Tiboitel\Camagru", __DIR__ . "/../" );
+$autoloader->addNamespace("Tiboitel\Camagru", __DIR__ . "/../src/" );
 
 $app = new App();
 $app->run();

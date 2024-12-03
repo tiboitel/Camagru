@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tiboitel\Camagru\Psr\Http\Message;
 
+use Tiboitel\Camagru\Psr\Http\Message\Message;
 use Tiboitel\Camagru\Psr\Http\Message\RequestInterface;
 use Tiboitel\Camagru\Psr\Http\MessageInterface;
 use Tiboitel\Camagru\Psr\Http\Message\UriInterface;
@@ -15,7 +16,7 @@ use Tiboitel\Camagru\Psr\Http\Message\UriInterface;
  * PHP-FIG standards, including PSR-1, PSR-4 and PSR-12.
  */
 
-class Request implements RequestInterface
+class Request extends Message implements RequestInterface
 {
     /** @var string */
     private $method;

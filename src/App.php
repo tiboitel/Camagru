@@ -15,7 +15,6 @@ class App
 
     public function __construct()
     {
-        echo "App constructor called\n";
         $this->router = new Router();
     }
 

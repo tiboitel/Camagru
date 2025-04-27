@@ -1,16 +1,22 @@
 <?php
 namespace Tiboitel\Camagru\Controllers;
 
+use Tiboitel\Camagru\Helpers\View;;
+
 class GalleryController
 {
     public function index()
     {
-        require __DIR__ . '/../Views/gallery/index.php';
+        View::Render('gallery/index', [
+            'title' => "Home - Camagru"
+        ]);
     }
 
     public function gallery()
     {
-        require __DIR__ . '/../Views/gallery/index.php';
+        View::Render('gallery/gallery', [
+            'title' => "Gallery - Camagru"
+        ]);
     }
 }
 

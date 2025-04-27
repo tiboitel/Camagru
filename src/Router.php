@@ -27,8 +27,13 @@ class Router
             }
         }
 
+        $this->handleNotFound();
+    }
+
+    private function handleNotFound(): void
+    {
         http_response_code(404);
-        echo "404 Not Found";
+        require __DIR__ . '/Views/errors/404.php';
     }
 }
 

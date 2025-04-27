@@ -3,7 +3,7 @@
     "description": "Camagru is a lightweight, Instagram-inspired web application for editing, uploading, and sharing images with overlays, comments, and galleries.",
     "type": "project",
     "require": {
-        "php": "^8.2"
+        "php": "^8.1"
     },
     "license": "MIT",
     "autoload": {

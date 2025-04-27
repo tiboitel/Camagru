@@ -1,18 +1,22 @@
 <?php
 declare(strict_types=1);
 
-
 require_once __DIR__ . '/../src/Autoloader.php';
 
 use Tiboitel\Camagru\Autoloader;
 use Tiboitel\Camagru\App;
-
-error_reporting(E_ALL);
+use Tiboitel\Camagru\Config;
 
 $autoloader = new Autoloader();
 $autoloader->register();
-$autoloader->addNamespace("Tiboitel\Camagru", __DIR__ . "/../src/" );
+$autoloader->addNamespace('Tiboitel\Camagru', __DIR__ . '/../src/');
 
 $app = new App();
+
+// Register routes
+$app->registerRoutes(function($router) {
+    Tiboitel\Camagru\Config\setRoutesConfig($router);
+});
+
 $app->run();
-?>
+

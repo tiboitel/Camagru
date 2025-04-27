@@ -1,3 +1,0 @@
- - Implement Request class.
- - Implement Uri class with PSR-7 UriInterface. 
- 

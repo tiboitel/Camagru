@@ -5,7 +5,7 @@ require_once __DIR__ . '/../src/Autoloader.php';
 
 use Tiboitel\Camagru\Autoloader;
 use Tiboitel\Camagru\App;
-use Tiboitel\Camagru\Config;
+use Tiboitel\Camagru\Config\Routes;
 
 $autoloader = new Autoloader();
 $autoloader->register();
@@ -15,7 +15,7 @@ $app = new App();
 
 // Register routes
 $app->registerRoutes(function($router) {
-    Tiboitel\Camagru\Config\setRoutesConfig($router);
+    Routes::register($router);
 });
 
 $app->run();

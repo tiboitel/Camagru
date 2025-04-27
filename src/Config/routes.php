@@ -4,11 +4,14 @@ namespace Tiboitel\Camagru\Config;
 use Tiboitel\Camagru\Router;
 use Tiboitel\Camagru\Controllers\GalleryController;
 
-function setRoutesConfig(Router $router)
+class Routes
 {
-    $gallery = new GalleryController();
+    public static function register(Router $router): void
+    {
+        $gallery = new GalleryController();
 
-    $router->get('/', [$gallery, 'index']);
-    $router->get('/gallery', [$gallery, 'gallery']);
+        $router->get('/', [$gallery, 'index']);
+        $router->get('/gallery', [$gallery, 'gallery']);
+    }
 }
->
+

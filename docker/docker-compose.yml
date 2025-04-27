@@ -14,6 +14,7 @@ services:
       - ../public:/var/www/public
       - ../src:/var/www/src
       - ../vendor:/var/www/vendor
+      - ../database:/var/www/database
     depends_on:
       - db
     environment:

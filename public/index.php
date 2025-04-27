@@ -13,16 +13,16 @@ $autoloader->addNamespace('Tiboitel\Camagru', __DIR__ . '/../src/');
 
 $app = new App();
 
-try {
+//try {
     // Register routes
     $app->registerRoutes(function($router) {
         Routes::register($router);
     });
 
     $app->run();
-} catch (Throwable $e) {
+/*} catch (Throwable $e) {
     http_response_code(500);
     require __DIR__ . '/../src/Views/errors/500.php';
     error_log($e->getMessage());
-}
+    }*/
 

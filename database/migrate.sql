@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    confirmed TINYINT(1) DEFAULT 0,
+    confirmation_token VARCHAR(64) DEFAULT NULL,
+    reset_token VARCHAR(64) DEFAULT NULL,
+    notify_on_comment TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

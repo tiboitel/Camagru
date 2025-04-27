@@ -51,6 +51,8 @@ services:
       MYSQL_PASSWORD: root
     expose: 
       - "3306"
+    networks:
+      - camagru
     restart: always
 
 networks:

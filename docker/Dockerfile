@@ -24,5 +24,7 @@ COPY ../src /var/www/src
 RUN chown -R www-data:www-data /var/www/src \
     && chmod -R 755 /var/www/src
 
+RUN cd ..
+
 # Expose port 9000 to connect to Nginx
 EXPOSE 9000

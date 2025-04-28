@@ -78,7 +78,7 @@ class UserController
 
             $to      = $email;
             $subject = 'Testing Camagru';
-            $message =  "Click to confirm: $confirmUrl";
+            $message =  'Click to confirm: ' . $confirmUrl;
             $headers = 'From: jules.boitelle@gmail.com' . "\r\n" .
                         'Reply-To: camagru.project@gmail.com' . "\r\n" .
                         'X-Mailer: PHP/' . phpversion();

@@ -75,7 +75,19 @@ class UserController
 
             // Send confirmation email (simple mail for now)
             $confirmUrl = 'http://' . $_SERVER['HTTP_HOST'] . '/confirm?token=' . $confirmationToken;
-            mail($email, "Confirm your Camagru account", "Click to confirm: $confirmUrl");
+
+            $to      = $email;
+            $subject = 'Testing Camagru';
+            $message =  "Click to confirm: $confirmUrl";
+            $headers = 'From: jules.boitelle@gmail.com' . "\r\n" .
+                        'Reply-To: camagru.project@gmail.com' . "\r\n" .
+                        'X-Mailer: PHP/' . phpversion();
+
+            if (mail($to, $subject, $message, $headers)) {
+                echo "✅ Mail sent!";
+            } else {
+                echo "❌ Mail failed.";
+            }
 
             echo "Registration successful. Please check your email.";
         }

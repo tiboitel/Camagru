@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libxpm-dev \
     libfreetype6-dev \
     libzip-dev \
+    msmtp msmtp-mta \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install gd pdo pdo_mysql zip
 
@@ -24,7 +25,8 @@ COPY ../src /var/www/src
 RUN chown -R www-data:www-data /var/www/src \
     && chmod -R 755 /var/www/src
 
-RUN cd ..
+COPY docker/msmtprc /etc/msmtprc
 
 # Expose port 9000 to connect to Nginx
 EXPOSE 9000
+EXPOSE 25

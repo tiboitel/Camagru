@@ -1,12 +1,13 @@
-version: '3.8'
+# docker/docker-compose.yml
 
+# Load all key=val pairs from the project‐root .env
 services:
   web:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: camagru-php
-    expose: 
+    expose:
       - "9000"
     networks:
       - camagru
@@ -19,19 +20,12 @@ services:
       - db
     env_file:
       - ../.env
-    environment:
-      - DB_HOST=${DB_HOST}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASS=$(DB_PASS}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASS=${SMTP_PASS}
     restart: always
 
   nginx:
     build:
-      context: ../docker
-      dockerfile: nginx.Dockerfile
+      context: ..
+      dockerfile: docker/nginx.Dockerfile
     container_name: camagru-nginx
     ports:
       - "8080:80"
@@ -53,7 +47,7 @@ services:
       MYSQL_DATABASE: camagru
       MYSQL_USER: tiboitel
       MYSQL_PASSWORD: root
-    expose: 
+    expose:
       - "3306"
     networks:
       - camagru
@@ -62,3 +56,4 @@ services:
 networks:
   camagru:
     driver: bridge
+

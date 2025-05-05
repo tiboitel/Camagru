@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     msmtp \
     msmtp-mta \
+    gettext \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install gd pdo pdo_mysql zip
 
@@ -26,21 +27,23 @@ COPY ../src /var/www/src
 RUN chown -R www-data:www-data /var/www/src \
     && chmod -R 755 /var/www/src
 
-# Copy msmtp config
-COPY docker/msmtp-template.conf /etc/msmtprc.template
-
-# docker/entrypoint.sh
-RUN envsubst < /etc/msmtprc.template > /etc/msmtprc
-
-RUN chmod 644 /etc/msmtprc \
-    && chown root:root /etc/msmtprc
-
 # Make sure only root can read it, and create the log file
 RUN touch /var/log/msmtp.log \
     && chown www-data:www-data /var/log/msmtp.log
 
+# Copy msmtp config
+COPY docker/msmtp-template.conf /etc/msmtprc.template
+
 RUN echo 'sendmail_path = "/usr/bin/msmtp -t"' \
     >> /usr/local/etc/php/php.ini
 
-# Expose port 9000 to connect to Nginx
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+RUN chown root:root /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
+
+CMD ["php-fpm"]
+
 EXPOSE 9000

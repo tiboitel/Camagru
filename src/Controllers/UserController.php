@@ -132,7 +132,28 @@ class UserController
 
     public function login()
     {
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
 
+        $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email');
+        $stmt->execute(['email' => $email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user || !password_verify($password, $user['password_hash'])) {
+            echo "Invalid credentials.";
+            return;
+        }
+
+        if (!$user['confirmed']) {
+            echo "Please confirm your email before logging in.";
+            return;
+        }
+
+        session_start();
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+
+        echo "✅ Logged in successfully.";
     }
 }
 

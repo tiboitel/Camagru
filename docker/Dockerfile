@@ -27,7 +27,10 @@ RUN chown -R www-data:www-data /var/www/src \
     && chmod -R 755 /var/www/src
 
 # Copy msmtp config
-COPY docker/msmtprc /etc/msmtprc
+COPY docker/msmtp-template.conf /etc/msmtprc.template
+
+# docker/entrypoint.sh
+RUN envsubst < /etc/msmtprc.template > /etc/msmtprc
 
 RUN chmod 644 /etc/msmtprc \
     && chown root:root /etc/msmtprc

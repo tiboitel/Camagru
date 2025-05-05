@@ -17,11 +17,15 @@ services:
       - ../database:/var/www/database
     depends_on:
       - db
+    env_file:
+      - ../.env
     environment:
-      - DB_HOST=db
-      - DB_NAME=camagru
-      - DB_USER=root
-      - DB_PASS=root
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=$(DB_PASS}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
     restart: always
 
   nginx:

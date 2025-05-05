@@ -73,7 +73,6 @@ class UserController
                 'confirmation_token' => $confirmationToken,
             ]);
 
-            // Send confirmation email (simple mail for now)
             $confirmUrl = 'http://' . $_SERVER['HTTP_HOST'] . '/confirm?token=' . $confirmationToken;
 
             $to      = $email;
@@ -122,6 +121,18 @@ class UserController
         $updateStmt->execute(['id' => $user['id']]);
 
         echo "Account succesfully confirmed. You can now log in.";
+    }
+
+    public function showLoginForm()
+    {
+        View::render('user/login', [
+            'title' => 'Login - Camagru'
+        ]);
+    }
+
+    public function login()
+    {
+
     }
 }
 

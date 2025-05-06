@@ -21,8 +21,10 @@ class UserController
     public function showRegisterForm()
     {
         View::render('user/register', [
-            'title' => 'Register - Camagru'
+            'title' => 'Register - Camagru',
+            'old' => $_SESSION['old'] ?? []
         ]);
+        unset($_SESSION['old']);
     }
 
     public function register()
@@ -126,34 +128,49 @@ class UserController
     public function showLoginForm()
     {
         View::render('user/login', [
-            'title' => 'Login - Camagru'
+            'title' => 'Login - Camagru',
+            'old' => $_SESSION['old'] ?? []
         ]);
+        unset($_SESSION['old']);
     }
 
     public function login()
     {
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
+        $_SESSION['old'] = ['email' => $email];
 
         $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email');
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$user || !password_verify($password, $user['password_hash'])) {
-            echo "Invalid credentials.";
-            return;
+            $_SESSION['flash']['error'] = 'E-mail or password is incorrect or doesn\'t exist.';
+            header('Location: /login');
+            exit;
         }
 
         if (!$user['confirmed']) {
-            echo "Please confirm your email before logging in.";
-            return;
+            $_SESSION['flash']['error'] = 'Please confirm your email before logging in.';
+            header('Location: /login');
+            exit;
         }
 
-        session_start();
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
+        $_SESSION['flash']['success'] = 'Logged in successfully.';
+        header('Location: /');
+        exit;
+    }
 
-        echo "✅ Logged in successfully.";
+    public function logout()
+    {
+        session_unset();
+        session_destroy();
+        session_start();
+        $_SESSION['flash']['success'] = 'You have been logged out.';
+        header('Location: /');
+        exit;
     }
 }
 

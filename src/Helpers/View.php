@@ -5,6 +5,9 @@ class View
 {
     public static function render(string $viewPath, array $params = []): void
     {
+        $flash = $_SESSION['flash'] ?? [];
+        unset($_SESSION['flash']);
+
         $fullPath = __DIR__ . '/../Views/' . $viewPath . '.php';
 
         if (!file_exists($fullPath)) {

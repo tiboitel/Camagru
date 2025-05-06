@@ -19,6 +19,7 @@ class Routes
         $router->get('/confirm', [$user, 'confirmAccount']);
         $router->get('/login', [$user, 'showLoginForm']);
         $router->post('/login', [$user, 'login']);
+        $router->get('/logout', [$user, 'logout']);
     }
 }
 

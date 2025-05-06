@@ -20,6 +20,12 @@ class Routes
         $router->get('/login', [$user, 'showLoginForm']);
         $router->post('/login', [$user, 'login']);
         $router->get('/logout', [$user, 'logout']);
+        $router->get('/password/forgot', [$user, 'showForgotForm']);
+        $router->post('/password/forgot', [$user, 'sendResetEmail']);
+        $router->get('/password/reset', [$user, 'showResetForm']);
+        $router->post('/password/reset', [$user, 'resetPassword']);
+        $router->get('/profile', [$user, 'showProfile']);
+        $router->post('/profile', [$user, 'updateProfile']);
     }
 }
 

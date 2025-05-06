@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     confirmed TINYINT(1) DEFAULT 0,
     confirmation_token VARCHAR(64) DEFAULT NULL,
     reset_token VARCHAR(64) DEFAULT NULL,
+    reset_token_expires_at DATETIME DEFAULT NULL,
     notify_on_comment TINYINT(1) DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

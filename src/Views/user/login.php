@@ -33,6 +33,9 @@
         required
         class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-plum transition"
       >
+      <span class="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
+        <a href ="/password/forgot" class="text-plum hover:underline">Forgotten password ?</a>
+      </span>
     </div>
     <button
       type="submit"
@@ -45,6 +48,5 @@
   <p class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
     Don’t have an account?
     <a href="/register" class="text-plum hover:underline">Sign up</a>
-  </p>
 </section>
 

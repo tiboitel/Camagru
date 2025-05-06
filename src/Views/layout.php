@@ -41,7 +41,7 @@
         <a href="/" class="hover:text-burnt-orange transition">Home</a>
         <a href="/gallery" class="hover:text-burnt-orange transition">Gallery</a>
         <?php if (!empty($_SESSION['user_id'])): ?>
-          <span>Hi, <?= htmlspecialchars($_SESSION['username']) ?></span>
+          <a href="/profile" class="hover:text-fire-brick transition">Profile</a>
           <a href="/logout" class="hover:text-fire-brick transition">Logout</a>
         <?php else: ?>
           <a href="/login" class="hover:text-fire-brick transition">Login</a>

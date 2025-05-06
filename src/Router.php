@@ -1,6 +1,8 @@
 <?php
 namespace Tiboitel\Camagru;
 
+use Tiboitel\Camagru\Helpers\View;
+
 class Router
 {
     private array $routes = [];
@@ -33,7 +35,9 @@ class Router
     private function handleNotFound(): void
     {
         http_response_code(404);
-        require __DIR__ . '/Views/errors/404.php';
+        View::render('errors/404', [
+            'title' => "404 error - Camagru"
+        ]);
     }
 }
 

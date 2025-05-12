@@ -1,298 +1,120 @@
 <?php
 namespace Tiboitel\Camagru\Controllers;
 
+use Tiboitel\Camagru\Models\User;
 use Tiboitel\Camagru\Helpers\View;
-use PDO;
+use Tiboitel\Camagru\Helpers\Mail;
 
 class UserController
 {
-    private PDO $db;
+    private User $userModel;
 
     public function __construct()
     {
-        $this->db = new PDO(
-            'mysql:host=' . getenv('DB_HOST') . ';dbname=' . getenv('DB_NAME'),
-            getenv('DB_USER'),
-            getenv('DB_PASS')
-        );
-        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    }
-
-    public function showRegisterForm()
-    {
-        View::render('user/register', [
-            'title' => 'Register - Camagru',
-            'old' => $_SESSION['old'] ?? []
-        ]);
-        unset($_SESSION['old']);
+        $this->userModel = new User();
     }
 
     public function register()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $username = trim($_POST['username'] ?? '');
-            $email = trim($_POST['email'] ?? '');
-            $password = $_POST['password'] ?? '';
-            $_SESSION['old']['email'] = $email;
-            $_SESSION['old']['username'] = $username;
+            $username = trim($_POST['username']);
+            $email = trim($_POST['email']);
+            $password = $_POST['password'];
+            $confirmPassword = $_POST['confirm_password'];
 
-            if (!$username || !$email || !$password) {
-                $_SESSION['flash']['error'] = "All fields are required.";
-                header('Location: /register');
-                exit;
+            // Simple validations
+            if ($password !== $confirmPassword) {
+                $_SESSION['flash'] = 'Passwords do not match.';
+                return View::render('user/register');
             }
 
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $_SESSION['flash']['error'] = 'The email address format is incorrect,';
-                header('Location: /register');
-                exit;
+            if ($this->userModel->emailExists($email)) {
+                $_SESSION['flash'] = 'Email already exists.';
+                return View::render('user/register');
             }
 
-            if (strlen($password) < 6) {
-                $_SESSION['flash']['error'] = 'Password should be at least 6 characters.';
-                header('Location: /register');
-                exit;
+            if ($this->userModel->usernameExists($username)) {
+                $_SESSION['flash'] = 'Username already exists.';
+                return View::render('user/register');
             }
 
-            // Check if username or email exists
-            $stmt = $this->db->prepare('SELECT id FROM users WHERE email = :email OR username = :username');
-            $stmt->execute(['email' => $email, 'username' => $username]);
-            if ($stmt->fetch()) {
-                $_SESSION['flash']['error'] = 'Username or email already taken.';
-                header('Location: /register');
-                exit;
-            }
+            $token = bin2hex(random_bytes(16));
+            $hash = password_hash($password, PASSWORD_DEFAULT);
 
-            // Insert new user
-            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-            $confirmationToken = bin2hex(random_bytes(32));
-
-            $stmt = $this->db->prepare('
-                INSERT INTO users (username, email, password_hash, confirmation_token) 
-                VALUES (:username, :email, :password_hash, :confirmation_token)
-            ');
-
-            $stmt->execute([
+            $success = $this->userModel->create([
                 'username' => $username,
                 'email' => $email,
-                'password_hash' => $passwordHash,
-                'confirmation_token' => $confirmationToken,
+                'password_hash' => $hash,
+                'confirmation_token' => $token,
             ]);
 
-            $confirmUrl = 'http://' . $_SERVER['HTTP_HOST'] . '/confirm?token=' . $confirmationToken;
+            if ($success) {
+                Mail::sendRegistrationEmail([
+                    'username' => $username,
+                    'email' => $email,
+                    'confirmation_token' => $token
+                ]);
 
-            $to      = $email;
-            $subject = 'Testing Camagru';
-            $message =  'Click to confirm: ' . $confirmUrl;
-            $headers = 'From: jules.boitelle@gmail.com' . "\r\n" .
-                        'Reply-To: camagru.project@gmail.com' . "\r\n" .
-                        'X-Mailer: PHP/' . phpversion();
-
-            if (!mail($to, $subject, $message, $headers)) {
-                $_SESSION['flash']['error'] = 'Sending the confirmation email failed. Please try again in few minutes.';
-                header('Location: /register');
-                exit();
+                $_SESSION['flash'] = 'Account created. Check your email.';
+                header('Location: /login');
+                exit;
             }
 
-            $_SESSION['flash']['success'] = 'Registration successful. Please check your email.';
-            header('Location: /login');
-            exit();
+            $_SESSION['flash'] = 'Registration failed.';
         }
+
+        View::render('user/register');
     }
 
-    public function confirmAccount()
+    public function confirm()
     {
-        $token = $_GET['token'] ?? '';
-
+        $token = $_GET['token'] ?? null;
         if (!$token) {
             http_response_code(400);
-            echo "Missing confirmation token.";
-            return ;
+            return View::render('errors/404');
         }
 
-        $stmt = $this->db->prepare('SELECT id FROM users WHERE confirmation_token = :token');
-        $stmt->execute(['token' => $token]);
-        $user = $stmt->fetch();
-
+        $user = $this->userModel->findByConfirmationToken($token);
         if (!$user) {
-            http_response_code(400);
-            echo "Invalid or experied confirmation token";
-            return ;
+            $_SESSION['flash'] = 'Invalid or expired token.';
+            return View::render('user/login');
         }
 
-        $updateStmt = $this->db->prepare('
-            UPDATE users
-            SET confirmed = 1, confirmation_token = NULL
-            WHERE id = :id
-        ');
-
-        $updateStmt->execute(['id' => $user['id']]);
-        $_SESSION['flash']['success'] =  'Account succesfully confirmed. You can now log in.';
+        $this->userModel->confirm($user['id']);
+        $_SESSION['flash'] = 'Account confirmed. You can now login.';
         header('Location: /login');
-    }
-
-    public function showLoginForm()
-    {
-        if (!empty($_SESSION['user_id']))
-        {
-            $_SESSION['flash']['warning'] = 'You are already logged in.';
-            header('Location: /');
-            exit ;
-        }
-
-        View::render('user/login', [
-            'title' => 'Login - Camagru',
-            'old' => $_SESSION['old'] ?? []
-        ]);
-        unset($_SESSION['old']);
+        exit;
     }
 
     public function login()
     {
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $_SESSION['old'] = ['email' => $email];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = trim($_POST['email']);
+            $password = $_POST['password'];
 
-        $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email');
-        $stmt->execute(['email' => $email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            $user = $this->userModel->findByEmail($email);
 
-        if (!$user || !password_verify($password, $user['password_hash'])) {
-            $_SESSION['flash']['error'] = 'E-mail or password is incorrect or doesn\'t exist.';
-            header('Location: /login');
-            exit;
+            if ($user && password_verify($password, $user['password_hash'])) {
+                $_SESSION['flash'] = 'Welcome ' . $user['username'] . '!';
+                $_SESSION['user_id'] = $user['id'];
+                header('Location: /');
+                exit;
+            }
+
+            $_SESSION['flash'] = 'Invalid credentials.';
         }
 
-        if (!$user['confirmed']) {
-            $_SESSION['flash']['error'] = 'Please confirm your email before logging in.';
-            header('Location: /login');
-            exit;
-        }
-
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['flash']['success'] = 'Logged in successfully.';
-        header('Location: /');
-        exit;
+        View::render('user/login');
     }
 
     public function logout()
     {
-        session_unset();
         session_destroy();
-        session_start();
-        $_SESSION['flash']['success'] = 'You have been logged out.';
-        header('Location: /');
-        exit;
-    }
-
-    public function showForgotForm()
-    {
-        View::render('user/forgot', [
-            'title' => 'Forgot Password - Camagru'
-        ]);
-    }
-
-    public function sendResetEmail()
-    {
-        $email = trim($_POST['email'] ?? '');
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $_SESSION['flash']['error'] = 'Please enter a valid email.';
-            header('Location: /password/forgot');
-            exit;
-        }
-
-        $stmt = $this->db->prepare('SELECT id FROM users WHERE email = :email');
-        $stmt->execute(['email' => $email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($user) {
-            $token  = bin2hex(random_bytes(32));
-            $expiry = (new \DateTime('+1 hour'))->format('Y-m-d H:i:s');
-
-            $upd = $this->db->prepare('
-                UPDATE users
-                SET reset_token = :token, reset_token_expires_at = :expiry
-                WHERE id = :id
-            ');
-            $upd->execute([
-                'token'  => $token,
-                'expiry' => $expiry,
-                'id'     => $user['id']
-            ]);
-
-            $link = 'http://' . $_SERVER['HTTP_HOST']
-                  . '/password/reset?token=' . $token;
-
-            mail(
-                $email,
-                'Camagru Password Reset',
-                "Click here to reset your password:\n\n{$link}",
-                'From: no-reply@camagru.local'
-            );
-        }
-
-        // For security, always show same message
-        $_SESSION['flash']['success'] = 'If that email exists, you’ll receive reset instructions.';
         header('Location: /login');
         exit;
     }
 
-    public function showResetForm()
-    {
-        $token = $_GET['token'] ?? '';
-        View::render('user/reset', [
-            'title' => 'Reset Password - Camagru',
-            'token' => htmlspecialchars($token, ENT_QUOTES, 'UTF-8')
-        ]);
-    }
-
-    public function resetPassword()
-    {
-        $token    = $_POST['token'] ?? '';
-        $password = $_POST['password'] ?? '';
-        $confirmPassword = $_POST['password_confirmation'] ?? '';
-
-        if (!$token || strlen($password) < 6) {
-            $_SESSION['flash']['error'] = 'Invalid token or password too short.';
-            header("Location: /password/reset?token={$token}");
-            exit;
-        }
-
-        if (strcmp($password, $confirmPassword) != 0) {
-            $_SESSION['flash']['error'] = 'The new password does not match the password confirmation';
-            header("Location: /password/reset?token={$token}");
-            exit ;
-        }
-
-        $stmt = $this->db->prepare('
-            SELECT id, reset_token_expires_at
-            FROM users
-            WHERE reset_token = :token
-        ');
-        $stmt->execute(['token' => $token]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$user || new \DateTime() > new \DateTime($user['reset_token_expires_at'])) {
-            $_SESSION['flash']['error'] = 'Token expired or invalid.';
-            header('Location: /password/forgot');
-            exit;
-        }
-
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $upd  = $this->db->prepare('
-            UPDATE users
-            SET password_hash = :hash, reset_token = NULL, reset_token_expires_at = NULL
-            WHERE id = :id
-        ');
-        $upd->execute(['hash' => $hash, 'id' => $user['id']]);
-
-        $_SESSION['flash']['success'] = 'Password updated — please log in.';
-        header('Location: /login');
-        exit;
-    }
-
-    public function showProfile()
+    public function profile()
     {
         $userId = $_SESSION['user_id'] ?? null;
         if (!$userId) {
@@ -300,62 +122,76 @@ class UserController
             exit;
         }
 
-        // Fetch user data
-        $stmt = $this->db->prepare('SELECT username, email, notify_on_comment FROM users WHERE id = :id');
-        $stmt->execute(['id' => $userId]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $user = $this->userModel->findById($userId);
 
-        // Fetch user images
-        # $imgs = $this->db->prepare('SELECT id, url, created_at FROM images WHERE user_id = :id ORDER BY created_at DESC');
-        # $imgs->execute(['id' => $userId]);
-        # $images = $imgs->fetchAll(PDO::FETCH_ASSOC);
-        $images = [];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $username = trim($_POST['username']);
+            $email = trim($_POST['email']);
+            $notify = isset($_POST['notify']) ? 1 : 0;
 
-        View::render('user/profile', [
-            'title'   => 'Your Profile - Camagru',
-            'user'    => $user,
-            'images'  => $images
-        ]);
-    }
-
-    public function updateProfile()
-    {
-        $userId = $_SESSION['user_id'] ?? null;
-        if (!$userId) {
-            header('Location: /login');
+            $this->userModel->updateProfile($userId, $username, $email, $notify);
+            $_SESSION['flash'] = 'Profile updated.';
+            header('Location: /profile');
             exit;
         }
 
-        $username = trim($_POST['username'] ?? '');
-        $email    = trim($_POST['email'] ?? '');
-        $notif    = isset($_POST['notify']) ? 1 : 0;
+        View::render('user/profile', ['user' => $user]);
+    }
 
-        // Basic validation omitted for brevity...
+    public function forgot()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = trim($_POST['email']);
+            $user = $this->userModel->findByEmail($email);
 
-        $upd = $this->db->prepare('
-            UPDATE users
-            SET username = :username, email = :email, notify_on_comment = :notif
-            WHERE id = :id
-        ');
-        $upd->execute([
-            'username' => $username,
-            'email'    => $email,
-            'notif'    => $notif,
-            'id'       => $userId
-        ]);
-
-        if (!empty($_POST['password'])) {
-            $pw = $_POST['password'];
-            if (strlen($pw) >= 6) {
-                $hash = password_hash($pw, PASSWORD_DEFAULT);
-                $this->db->prepare('UPDATE users SET password_hash = :h WHERE id = :id')
-                         ->execute(['h' => $hash, 'id' => $userId]);
+            if ($user) {
+                $token = bin2hex(random_bytes(16));
+                $expiry = date('Y-m-d H:i:s', time() + 3600);
+                $this->userModel->setResetToken($user['id'], $token, $expiry);
+                Mail::sendPasswordResetEmail($user, $token);
             }
+
+            $_SESSION['flash'] = 'If the email exists, a reset link has been sent.';
         }
 
-        $_SESSION['flash']['success'] = 'Profile updated.';
-        header('Location: /profile');
-        exit;
+        View::render('user/forgot');
+    }
+
+    public function reset()
+    {
+        $token = $_GET['token'] ?? null;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $password = $_POST['password'];
+            $confirm = $_POST['confirm_password'];
+
+            if ($password !== $confirm) {
+                $_SESSION['flash'] = 'Passwords do not match.';
+                return View::render('user/reset');
+            }
+
+            $token = $_POST['token'] ?? null;
+            $user = $this->userModel->findByResetToken($token);
+
+            if (!$user || strtotime($user['reset_token_expires_at']) < time()) {
+                $_SESSION['flash'] = 'Invalid or expired token.';
+                return View::render('user/reset');
+            }
+
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $this->userModel->updatePassword($user['id'], $hash);
+
+            $_SESSION['flash'] = 'Password updated. You can now log in.';
+            header('Location: /login');
+            exit;
+        }
+
+        if (!$token) {
+            http_response_code(400);
+            return View::render('errors/404');
+        }
+
+        View::render('user/reset', ['token' => $token]);
     }
 }
 

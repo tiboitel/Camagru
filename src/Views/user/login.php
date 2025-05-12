@@ -3,12 +3,10 @@
 
   <?php if (!empty($flash)): ?>
     <div class="space-y-2 mb-6">
-      <?php foreach ($flash as $type => $msg): ?>
         <div class="flash flash-<?= htmlspecialchars($type) ?> flex items-center">
           <svg class="w-5 h-5 mr-2" fill="currentColor"><!-- icon --></svg>
-          <span><?= htmlspecialchars($msg) ?></span>
+          <span><?= htmlspecialchars($flash) ?></span>
         </div>
-      <?php endforeach; ?>
     </div>
   <?php endif; ?>
 

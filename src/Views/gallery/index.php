@@ -1,4 +1,15 @@
 <section class="py-12">
+   <?php if (!empty($flash)): ?>
+    <div class="space-y-2 mb-6">
+        <div class="flash flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="currentColor"><!-- icon --></svg>
+          <span class="text-center"><?= htmlspecialchars($flash) ?></span>
+        </div>
+    </div>
+  <?php endif; ?>
+</div>
+
+<section class="py-12">
   <h2 class="text-3xl font-bold mb-6 text-center">Featured Creations</h2>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
     <?php foreach ($images as $img): ?>

@@ -19,7 +19,7 @@
         id="username"
         type="text"
         name="username"
-        value="<?= htmlspecialchars($old['username'] ?? '') ?>"
+        value="<?= htmlspecialchars($old['username'] ?? ''); ?>"
         required
         class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-plum transition"
       >
@@ -30,6 +30,7 @@
         id="email"
         type="email"
         name="email"
+        value="<?= htmlspecialchars($old['email'] ?? ''); ?>"
         required
         class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-plum transition"
       >
@@ -40,6 +41,16 @@
         id="password"
         type="password"
         name="password"
+        required
+        class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-plum transition"
+      >
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1" for="confirm_password">Confirm your password</label>
+      <input
+        id="confirm_password"
+        type="password"
+        name="confirm_password"
         required
         class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-plum transition"
       >

@@ -33,30 +33,34 @@ class UserController
             $username = trim($_POST['username'] ?? '');
             $email = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
+            $_SESSION['old']['email'] = $email;
+            $_SESSION['old']['username'] = $username;
 
             if (!$username || !$email || !$password) {
-                http_response_code(400);
-                echo "All fields are required.";
-                return;
+                $_SESSION['flash']['error'] = "All fields are required.";
+                header('Location: /register');
+                exit;
             }
 
-            // Input validation
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                echo "Invalid email.";
-                return;
+                $_SESSION['flash']['error'] = 'The email address format is incorrect,';
+                header('Location: /register');
+                exit;
             }
 
             if (strlen($password) < 6) {
-                echo "Password must be at least 6 characters.";
-                return;
+                $_SESSION['flash']['error'] = 'Password should be at least 6 characters.';
+                header('Location: /register');
+                exit;
             }
 
             // Check if username or email exists
             $stmt = $this->db->prepare('SELECT id FROM users WHERE email = :email OR username = :username');
             $stmt->execute(['email' => $email, 'username' => $username]);
             if ($stmt->fetch()) {
-                echo "Username or email already taken.";
-                return;
+                $_SESSION['flash']['error'] = 'Username or email already taken.';
+                header('Location: /register');
+                exit;
             }
 
             // Insert new user
@@ -84,13 +88,15 @@ class UserController
                         'Reply-To: camagru.project@gmail.com' . "\r\n" .
                         'X-Mailer: PHP/' . phpversion();
 
-            if (mail($to, $subject, $message, $headers)) {
-                echo "✅ Mail sent!";
-            } else {
-                echo "❌ Mail failed.";
+            if (!mail($to, $subject, $message, $headers)) {
+                $_SESSION['flash']['error'] = 'Sending the confirmation email failed. Please try again in few minutes.';
+                header('Location: /register');
+                exit();
             }
 
-            echo "Registration successful. Please check your email.";
+            $_SESSION['flash']['success'] = 'Registration successful. Please check your email.';
+            header('Location: /login');
+            exit();
         }
     }
 
@@ -121,8 +127,8 @@ class UserController
         ');
 
         $updateStmt->execute(['id' => $user['id']]);
-
-        echo "Account succesfully confirmed. You can now log in.";
+        $_SESSION['flash']['success'] =  'Account succesfully confirmed. You can now log in.';
+        header('Location: /login');
     }
 
     public function showLoginForm()
@@ -202,11 +208,11 @@ class UserController
 
         if ($user) {
             $token  = bin2hex(random_bytes(32));
-            $expiry = (new DateTime('+1 hour'))->format('Y-m-d H:i:s');
+            $expiry = (new \DateTime('+1 hour'))->format('Y-m-d H:i:s');
 
             $upd = $this->db->prepare('
                 UPDATE users
-                SET reset_token = :token, reset_token_expiry = :expiry
+                SET reset_token = :token, reset_token_expires_at = :expiry
                 WHERE id = :id
             ');
             $upd->execute([
@@ -237,7 +243,7 @@ class UserController
         $token = $_GET['token'] ?? '';
         View::render('user/reset', [
             'title' => 'Reset Password - Camagru',
-            'token' => htmlspecialchars($token)
+            'token' => htmlspecialchars($token, ENT_QUOTES, 'UTF-8')
         ]);
     }
 
@@ -245,6 +251,7 @@ class UserController
     {
         $token    = $_POST['token'] ?? '';
         $password = $_POST['password'] ?? '';
+        $confirmPassword = $_POST['password_confirmation'] ?? '';
 
         if (!$token || strlen($password) < 6) {
             $_SESSION['flash']['error'] = 'Invalid token or password too short.';
@@ -252,15 +259,21 @@ class UserController
             exit;
         }
 
+        if (strcmp($password, $confirmPassword) != 0) {
+            $_SESSION['flash']['error'] = 'The new password does not match the password confirmation';
+            header("Location: /password/reset?token={$token}");
+            exit ;
+        }
+
         $stmt = $this->db->prepare('
-            SELECT id, reset_token_expiry
+            SELECT id, reset_token_expires_at
             FROM users
             WHERE reset_token = :token
         ');
         $stmt->execute(['token' => $token]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$user || new DateTime() > new DateTime($user['reset_token_expiry'])) {
+        if (!$user || new \DateTime() > new \DateTime($user['reset_token_expires_at'])) {
             $_SESSION['flash']['error'] = 'Token expired or invalid.';
             header('Location: /password/forgot');
             exit;
@@ -269,7 +282,7 @@ class UserController
         $hash = password_hash($password, PASSWORD_DEFAULT);
         $upd  = $this->db->prepare('
             UPDATE users
-            SET password_hash = :hash, reset_token = NULL, reset_token_expiry = NULL
+            SET password_hash = :hash, reset_token = NULL, reset_token_expires_at = NULL
             WHERE id = :id
         ');
         $upd->execute(['hash' => $hash, 'id' => $user['id']]);

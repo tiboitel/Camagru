@@ -12,9 +12,9 @@
   <form method="POST" action="/password/forgot" class="space-y-5">
     <div>
       <label class="block text-sm font-medium mb-1" for="email">Email</label>
-      <input id="email" type="email" name="email" required>
+      <input id="email" type="email" name="email" required class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-plum transition">
     </div>
-    <button type="submit" class="w-full">Send Reset Link</button>
+    <button type="submit" class="w-full bg-plum hover:bg-fire-brick text-white font-semibold py-2 rounded-lg transition">Send Reset Link</button>
   </form>
   <p class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
     <a href="/login" class="text-plum hover:underline">Back to Login</a>

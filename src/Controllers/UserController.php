@@ -4,6 +4,7 @@ namespace Tiboitel\Camagru\Controllers;
 use Tiboitel\Camagru\Models\User;
 use Tiboitel\Camagru\Helpers\View;
 use Tiboitel\Camagru\Helpers\Mail;
+use Tiboitel\Camagru\Helpers\Flash;
 
 class UserController
 {
@@ -24,23 +25,22 @@ class UserController
 
             // Simple validations
             if ($password !== $confirmPassword) {
-                $_SESSION['flash'] = 'Passwords do not match.';
+                Flash::set(FLASH::WARNING, 'Passwords do not match.');
                 return View::render('user/register');
             }
 
             if ($this->userModel->emailExists($email)) {
-                $_SESSION['flash'] = 'Email already exists.';
+                Flash::set(FLASH::ERROR, 'Email already exists.');
                 return View::render('user/register');
             }
 
             if ($this->userModel->usernameExists($username)) {
-                $_SESSION['flash'] = 'Username already exists.';
+                Flash::set(FLASH::ERROR, 'Username already exists.');
                 return View::render('user/register');
             }
 
             $token = bin2hex(random_bytes(16));
             $hash = password_hash($password, PASSWORD_DEFAULT);
-
             $success = $this->userModel->create([
                 'username' => $username,
                 'email' => $email,
@@ -55,12 +55,12 @@ class UserController
                     'confirmation_token' => $token
                 ]);
 
-                $_SESSION['flash'] = 'Account created. Check your email.';
+                Flash::set(Flash::SUCCESS, 'Account created. Check your email.');
                 header('Location: /login');
                 exit;
             }
 
-            $_SESSION['flash'] = 'Registration failed.';
+            Flash::set(Flash::ERROR, 'Registration failed.');
         }
 
         View::render('user/register',
@@ -79,12 +79,12 @@ class UserController
 
         $user = $this->userModel->findByConfirmationToken($token);
         if (!$user) {
-            $_SESSION['flash'] = 'Invalid or expired token.';
+            Flash::set(Flash::ERROR, 'Invalid or expired token.');
             return View::render('user/login');
         }
 
         $this->userModel->confirm($user['id']);
-        $_SESSION['flash'] = 'Account confirmed. You can now login.';
+        Flash::set(Flash::ERROR, 'Account confirmed. You can now login.');
         header('Location: /login');
         exit;
     }
@@ -100,19 +100,19 @@ class UserController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = trim($_POST['email']);
             $password = $_POST['password'];
-
+            
             $user = $this->userModel->findByEmail($email);
 
             if ($user && password_verify($password, $user['password_hash'])) {
-                $_SESSION['flash'] = 'Welcome ' . $user['username'] . '!';
+
                 $_SESSION['user_id'] = $user['id'];
+                Flash::set(Flash::SUCCESS, 'Welcome' . $user['username'] , '!');
                 header('Location: /');
                 exit;
             }
 
-            $_SESSION['flash'] = 'Invalid credentials.';
+            Flash::set(Flash::ERROR, 'Invalid credentials.');
         }
-
         View::render('user/login',
             [
                 'title' => 'Login'

@@ -63,7 +63,10 @@ class UserController
             $_SESSION['flash'] = 'Registration failed.';
         }
 
-        View::render('user/register');
+        View::render('user/register',
+            [
+                'title' => 'Register'
+            ]);
     }
 
     public function confirm()
@@ -88,6 +91,12 @@ class UserController
 
     public function login()
     {
+        if (!empty($_SESSION['user_id']))
+        {
+            header('Location: /');
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = trim($_POST['email']);
             $password = $_POST['password'];
@@ -104,7 +113,10 @@ class UserController
             $_SESSION['flash'] = 'Invalid credentials.';
         }
 
-        View::render('user/login');
+        View::render('user/login',
+            [
+                'title' => 'Login'
+            ]);
     }
 
     public function logout()
@@ -135,7 +147,11 @@ class UserController
             exit;
         }
 
-        View::render('user/profile', ['user' => $user]);
+        View::render('user/profile', 
+            [
+                'title' => 'Profile',
+                'user' => $user
+            ]);
     }
 
     public function forgot()

@@ -2,6 +2,8 @@
 namespace Tiboitel\Camagru\Controllers;
 
 use Tiboitel\Camagru\Helpers\View;
+use Tiboitel\Camagru\Helpers\Flash;
+use Tiboitel\Camagru\Models\Image;
 
 class GalleryController
 {
@@ -56,11 +58,15 @@ class GalleryController
 
     public function editor()
     {
-        if (!empty($_POST))
+        $userId = $_SESSION['user_id'] ?? null;
+        if (!$userId)
         {
-            print_r($_POST);
+            http_response_code(403);
+            Flash::set(Flash::WARNING, "You are not authorized to go on this page.");
+            header('Location: /');
             exit;
         }
+
         return View::render('gallery/editor', [
             'title' => 'Editor'
         ]);

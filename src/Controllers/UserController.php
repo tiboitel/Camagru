@@ -142,7 +142,7 @@ class UserController
             $notify = isset($_POST['notify']) ? 1 : 0;
 
             $this->userModel->updateProfile($userId, $username, $email, $notify);
-            $_SESSION['flash'] = 'Profile updated.';
+            Flash::set(Flash::SUCCESS, 'Profile updated.');
             header('Location: /profile');
             exit;
         }
@@ -166,8 +166,7 @@ class UserController
                 $this->userModel->setResetToken($user['id'], $token, $expiry);
                 Mail::sendPasswordResetEmail($user, $token);
             }
-
-            $_SESSION['flash'] = 'If the email exists, a reset link has been sent.';
+            Flash::set(Flash::SUCCESS, 'If the email exists, a reset link has been sent.');
         }
 
         View::render('user/forgot');
@@ -182,7 +181,7 @@ class UserController
             $confirm = $_POST['confirm_password'];
 
             if ($password !== $confirm) {
-                $_SESSION['flash'] = 'Passwords do not match.';
+                Flash::set(Flash::ERROR, 'Passwords do not match.');
                 return View::render('user/reset');
             }
 
@@ -190,14 +189,13 @@ class UserController
             $user = $this->userModel->findByResetToken($token);
 
             if (!$user || strtotime($user['reset_token_expires_at']) < time()) {
-                $_SESSION['flash'] = 'Invalid or expired token.';
+                Flash::set(Flash::ERROR, 'Invalid or expired token');
                 return View::render('user/reset');
             }
 
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $this->userModel->updatePassword($user['id'], $hash);
-
-            $_SESSION['flash'] = 'Password updated. You can now log in.';
+            Flash::set(Flash::SUCCESS, 'Password updated. You can now log in.');
             header('Location: /login');
             exit;
         }

@@ -14,6 +14,8 @@ class Routes
 
         $router->get('/', [$gallery, 'index']);
         $router->get('/gallery', [$gallery, 'gallery']);
+        $router->get('/editor', [$gallery, 'editor']);
+        $router->post('/editor', [$gallery, 'editor']);
         $router->get('/register', [$user, 'register']);
         $router->post('/register', [$user, 'register']);
         $router->get('/confirm', [$user, 'confirm']);

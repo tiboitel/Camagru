@@ -53,5 +53,17 @@ class GalleryController
             'next'    => $next,
         ]);
     }
+
+    public function editor()
+    {
+        if (!empty($_POST))
+        {
+            print_r($_POST);
+            exit;
+        }
+        return View::render('gallery/editor', [
+            'title' => 'Editor'
+        ]);
+    }
 }
 
